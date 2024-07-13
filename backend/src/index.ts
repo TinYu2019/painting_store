@@ -5,7 +5,7 @@ import Stripe from "stripe";
 import { HTTPException } from "hono/http-exception";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2023-10-16",
+  apiVersion: "2024-06-20",
 });
 
 const app = new Hono();
@@ -65,12 +65,54 @@ app.post("/checkout", async (c) => {
 
     return c.json(session);
   } catch (error: any) {
-    console.error(error);
+    console.error(`[CHECKOUT] Error checking out ${error}`);
     throw new HTTPException(500, { message: error?.message });
   }
 });
 
+app.post("/embedded-checkout", async (c) => {
+  try {
+    const { priceId } = await c.req.json();
+
+    const session = await stripe.checkout.sessions.create({
+      ui_mode: "embedded",
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          quantity: 1,
+          price: priceId,
+        },
+      ],
+      mode: "payment",
+      return_url: `http://localhost:3000/return?session_id={CHECKOUT_SESSION_ID}`,
+    });
+
+    return c.json({
+      id: session.id,
+      client_secret: session.client_secret,
+    });
+  } catch (error: any) {
+    console.error(
+      `[EMBEDDED_CHECKOUT] Error getting embedded checkout form: ${error.message}`
+    );
+    throw new HTTPException(500);
+  }
+});
+
+app.get("/prices", async (c) => {
+  console.log("[PRICE] Received request to retrieve prices...");
+
+  const price = await stripe.prices.list();
+
+  console.log("[PRICE] Returning prices...");
+
+  return c.json({
+    price,
+  });
+});
+
 app.post("/webhook", async (c) => {
+  console.log("[WEBHOOK] received request to create webhook event..");
   const rawBody = await c.req.text();
   const signature = c.req.header("stripe-signature");
 
@@ -82,16 +124,18 @@ app.post("/webhook", async (c) => {
       process.env.STRIPE_WEBHOOK_SECRET!
     );
   } catch (error: any) {
-    console.error(`Webhook signature verification failed: ${error.message}`);
+    console.error(
+      `[WEBHOOK] Webhook signature verification failed: ${error.message}`
+    );
     throw new HTTPException(400);
   }
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
-    console.log(session);
+    console.log(`[WEBHOOK] session: ${session}`);
   }
 
-  return c.text("Oh Success!!");
+  return c.text("Success...");
 });
 
 app.get("/success", (c) => {
@@ -99,15 +143,20 @@ app.get("/success", (c) => {
 });
 
 app.get("/cancel", (c) => {
-  return c.text("Cancel :( !!!");
+  return c.text("Cancel...");
 });
 
-app.get("products", async (c) => {
-  console.log("BE products is called");
+app.get("/products", async (c) => {
+  console.log("[PRODUCTS] Received request to fetch products from backend");
+  try {
+    const products = await stripe.products.list();
+    console.log(`[PRODUCTS] Sending back ${products.data.length} products`);
 
-  const products = await stripe.products.list();
-
-  return c.json(products);
+    return c.json(products);
+  } catch (error: any) {
+    console.error(`[PRODUCTS] Error getting products, ${error.message}`);
+    throw new HTTPException(500);
+  }
 });
 
 // curl -G https://api.stripe.com/v1/products \

@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
 import { stripe } from "@/utils/stripe";
 
-export async function POST(request: Request) {
+export const POST = async (request: Request) => {
   try {
     const { priceId } = await request.json();
-    console.log("priceId>>", priceId);
     const session = await stripe.checkout.sessions.create({
       ui_mode: "embedded",
       payment_method_types: ["card"],
@@ -25,7 +24,7 @@ export async function POST(request: Request) {
       client_secret: session.client_secret,
     });
   } catch (error: any) {
-    console.error(error);
+    console.error(`[EMBEDDED_CHECKOUT_FE] Error in embedded checkout ${error}`);
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
-}
+};

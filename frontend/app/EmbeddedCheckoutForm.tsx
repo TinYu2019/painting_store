@@ -7,9 +7,7 @@ import {
 import { useCallback, useRef, useState } from "react";
 
 // TODO: type productDefaultPrice
-export default function EmbeddedCheckoutButton({ productDefaultPrice }: any) {
-  console.log("productDefaultPrice>>", productDefaultPrice);
-
+export const EmbeddedCheckoutButton = ({ productDefaultPrice }: any) => {
   const stripePromise = loadStripe(
     process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
   );
@@ -18,8 +16,7 @@ export default function EmbeddedCheckoutButton({ productDefaultPrice }: any) {
 
   const fetchClientSecret = useCallback(() => {
     // Create Checkout Session
-    console.log("HI");
-    return fetch("/api/embedded-checkout", {
+    return fetch("/api/backend/embedded-checkout", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -45,7 +42,7 @@ export default function EmbeddedCheckoutButton({ productDefaultPrice }: any) {
   return (
     <div id="checkout" className="my-4">
       <button className="btn" onClick={handleCheckoutClick}>
-        Open Modal with Embedded Checkout
+        Checkout
       </button>
       <dialog ref={modalRef} className="modal">
         <div className="modal-box w-100 max-w-screen-2xl">
@@ -71,4 +68,4 @@ export default function EmbeddedCheckoutButton({ productDefaultPrice }: any) {
       </dialog>
     </div>
   );
-}
+};

@@ -1,33 +1,52 @@
 "use client";
 
-import EmbeddedCheckoutButton from "./EmbeddedCheckoutForm";
+import { EmbeddedCheckoutButton } from "./EmbeddedCheckoutForm";
 import { useEffect, useCallback, useState } from "react";
 import Image from "next/image";
 
-export default function Home() {
+export const Home = () => {
   // TODO: type product
   const [products, setProducts] = useState<any | null>(null);
+  const [prices, setPrices] = useState<any | null>(null);
 
   const fetchProducts = useCallback(async () => {
-    const response = await fetch("/api/fetch-products", {
+    const response = await fetch("/api/backend/products", {
       method: "GET",
     }).then((res) => res.json());
-    // .then((data) => data.client_secret);
 
     setProducts(response.products);
+  }, []);
+
+  const fetchPrice = useCallback(async () => {
+    const response = await fetch("/api/backend/price").then((res) =>
+      res.json()
+    );
+
+    setPrices(response.prices);
   }, []);
 
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
 
+  useEffect(() => {
+    fetchPrice();
+  }, [fetchPrice]);
+
   if (!products || products.length === 0) {
     return null;
   }
   return (
     <div>
-      <div>Available Products: </div>
-      {/* TODO: type produc */}
+      <div
+        style={{
+          padding: 20,
+          fontSize: 30,
+        }}
+      >
+        Available Products
+      </div>
+      {/* TODO: type product */}
       <div>
         {products.map((product: any) => (
           <div
@@ -38,7 +57,7 @@ export default function Home() {
               padding: 10,
             }}
           >
-            <Product product={product} />
+            <Product product={product} prices={prices} />
             <EmbeddedCheckoutButton
               productDefaultPrice={product.default_price}
             />
@@ -47,20 +66,42 @@ export default function Home() {
       </div>
     </div>
   );
-}
+};
 
-function Product({ product }: any) {
+const Product = ({ product, prices }: any) => {
   const { id, images, default_price, name } = product;
+
+  let price;
+  if (prices) {
+    price = prices.find((item: any) => item.id === default_price);
+  }
+
   return (
     <div>
-      <Image src={images[0]} alt="" width={100} height={100} />
+      {images && (
+        <Image
+          src={images[0]}
+          alt=""
+          width={100}
+          height={100}
+          style={{
+            marginBottom: 10,
+          }}
+        />
+      )}
       <div style={textColor}>Name: {name}</div>
-      <div>Price: {default_price as string}</div>
+      {price && (
+        <div>
+          {`Price: ${price.currency.toUpperCase()}${price.unit_amount / 100}`}
+        </div>
+      )}
       <div>Description: ...</div>
     </div>
   );
-}
+};
 
 const textColor = {
   color: "",
 };
+
+export default Home;
