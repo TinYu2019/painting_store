@@ -1,8 +1,8 @@
 import { serve } from "@hono/node-server";
-import { Hono } from "hono";
 import "dotenv/config";
-import Stripe from "stripe";
+import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
+import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2024-06-20",
@@ -91,7 +91,7 @@ app.post("/webhook", async (c) => {
     throw new HTTPException(400);
   }
 
-  // we can check different ever type here
+  // we can handle different event type here
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
     console.log(
@@ -101,6 +101,7 @@ app.post("/webhook", async (c) => {
     // others actions
     // update databse with order details
     // send confirmation email
+    // deliver product to customer
     // ...
   }
 

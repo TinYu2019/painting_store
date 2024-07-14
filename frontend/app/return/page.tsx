@@ -25,11 +25,11 @@ export const CheckoutReturn = async ({ searchParams }: any) => {
       >
         <div>
           Thank you {session.customer_details?.name} for your support! Your
-          purchase is completed and will be delivered to you in 3 working days.
+          payment is completed.
         </div>
 
         <div>
-          Invoide will be sent to email address:{" "}
+          You will received an confirmation email with the registered email:
           {session.customer_details?.email}
         </div>
         <div
