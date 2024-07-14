@@ -15,7 +15,7 @@ export const EmbeddedCheckoutButton = ({ productDefaultPrice }: any) => {
   const modalRef = useRef<HTMLDialogElement>(null);
 
   const fetchClientSecret = useCallback(() => {
-    // Create Checkout Session
+    // Create a paymnet intent and return a checkout session
     return fetch("/api/backend/embedded-checkout", {
       method: "POST",
       headers: {

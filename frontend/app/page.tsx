@@ -1,6 +1,6 @@
 "use client";
 
-import { EmbeddedCheckoutButton } from "./EmbeddedCheckoutForm";
+import { EmbeddedCheckoutButton } from "./components/EmbeddedCheckoutForm";
 import { useEffect, useCallback, useState } from "react";
 import Image from "next/image";
 
@@ -18,7 +18,7 @@ export const Home = () => {
   }, []);
 
   const fetchPrice = useCallback(async () => {
-    const response = await fetch("/api/backend/price").then((res) =>
+    const response = await fetch("/api/backend/prices").then((res) =>
       res.json()
     );
 
@@ -81,7 +81,7 @@ const Product = ({ product, prices }: any) => {
       {images && (
         <Image
           src={images[0]}
-          alt=""
+          alt={images[0].name}
           width={100}
           height={100}
           style={{
@@ -89,7 +89,7 @@ const Product = ({ product, prices }: any) => {
           }}
         />
       )}
-      <div style={textColor}>Name: {name}</div>
+      <div>Name: {name}</div>
       {price && (
         <div>
           {`Price: ${price.currency.toUpperCase()}${price.unit_amount / 100}`}
@@ -98,10 +98,6 @@ const Product = ({ product, prices }: any) => {
       <div>Description: ...</div>
     </div>
   );
-};
-
-const textColor = {
-  color: "",
 };
 
 export default Home;
